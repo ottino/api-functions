@@ -6,15 +6,19 @@ const URL = 'https://www.infobae.com/economia/divisas/dolar-hoy/';
 export async function handler(event, context) {
     try {
         const dolarLibre = await getDolarLibre();
+        const dolarBancoNacion = await getDolarBancoNacion();
+        const dolarTurista = await getDolarTurista();
+        const dolarMEP = await getDolarMEP();
+        
         return {
             statusCode: 200,
-            body: JSON.stringify({ dolarLibre })
+            body: JSON.stringify({ dolarLibre, dolarBancoNacion, dolarTurista, dolarMEP })
         };
     } catch (error) {
-        console.error('Error al obtener el valor del dólar Libre:', error);
+        console.error('Error al obtener los valores del dólar:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Error al obtener el valor del dólar Libre' })
+            body: JSON.stringify({ error: 'Error al obtener los valores del dólar' })
         };
     }
 }
@@ -35,5 +39,62 @@ async function getDolarLibre() {
     } catch (error) {
         console.error('Error al obtener el valor del dólar Libre:', error);
         throw error;
+    }
+}
+
+async function getDolarBancoNacion() {
+    try {
+        const response = await axios.get(URL);
+        const html = response.data;
+        const $ = cheerio.load(html);
+
+        const dolarBancoNacionElement = $('.exchange-dolar-title').filter(function() {
+            return $(this).text().trim() === 'Dólar Banco Nación';
+        });
+        
+        const dolarBancoNacionAmount = dolarBancoNacionElement.siblings('.exchange-dolar-amount').text().trim();
+        
+        return dolarBancoNacionAmount;
+    } catch (error) {
+        console.error('Error al obtener el valor del dólar Banco Nación:', error);
+        return null;
+    }
+}
+
+async function getDolarTurista() {
+    try {
+        const response = await axios.get(URL);
+        const html = response.data;
+        const $ = cheerio.load(html);
+
+        const dolarTuristaElement = $('.exchange-dolar-title').filter(function() {
+            return $(this).text().trim() === 'Dólar Turista';
+        });
+        
+        const dolarTuristaAmount = dolarTuristaElement.siblings('.exchange-dolar-amount').text().trim();
+        
+        return dolarTuristaAmount;
+    } catch (error) {
+        console.error('Error al obtener el valor del dólar Turista:', error);
+        return null;
+    }
+}
+
+async function getDolarMEP() {
+    try {
+        const response = await axios.get(URL);
+        const html = response.data;
+        const $ = cheerio.load(html);
+
+        const dolarMEPElement = $('.exchange-dolar-title').filter(function() {
+            return $(this).text().trim() === 'Dólar MEP';
+        });
+        
+        const dolarMEPAmount = dolarMEPElement.siblings('.exchange-dolar-amount').text().trim();
+        
+        return dolarMEPAmount;
+    } catch (error) {
+        console.error('Error al obtener el valor del dólar MEP:', error);
+        return null;
     }
 }
